@@ -2,5 +2,6 @@ streamlit
 streamlit-webrtc
 speechrecognition
 pyaudio
+numpy
 av
-
+gTTS
