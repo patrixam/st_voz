@@ -1,6 +1,6 @@
 streamlit
 streamlit_webrtc
 speechrecognition
-pyttsx2
+pyttsx3
 pydub
 pyaudio
