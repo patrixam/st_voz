@@ -42,7 +42,7 @@ with col2:
 
 # Inicializa (o reinicializa) el componente de captura de audio usando un key dinámico
 webrtc_ctx = webrtc_streamer(
-    key=f"audio_{st.session_state.record_count}",
+    key="speech-to-text",
     mode=WebRtcMode.SENDRECV,
     rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
     media_stream_constraints={"audio": True, "video": False},
