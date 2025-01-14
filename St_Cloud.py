@@ -3,6 +3,17 @@ from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 import numpy as np
 import av
 
+rtc_configuration = {
+    "iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},  # Servidor STUN (público)
+        {
+            "urls": ["turn:tu.turn.server:3478"],      # Servidor TURN
+            "username": "tu_usuario",
+            "credential": "tu_credencial"
+        }
+    ]
+}
+
 st.title("Prueba de Captura de Audio")
 
 class AudioProcessor(AudioProcessorBase):
@@ -18,7 +29,7 @@ class AudioProcessor(AudioProcessorBase):
 webrtc_ctx = webrtc_streamer(
     key="audio_test",
     mode=WebRtcMode.SENDRECV,
-    rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
+    rtc_configuration=rtc_configuration,
     media_stream_constraints={"audio": True, "video": False},
     audio_processor_factory=AudioProcessor,
 )
