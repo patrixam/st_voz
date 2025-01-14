@@ -49,7 +49,7 @@ state = webrtc_streamer(
     audio_processor_factory=AudioProcessor,
     media_stream_constraints={"audio": True, "video": False},
     async_processing=False,  # Procesamiento síncrono para evitar problemas de contexto
-    key_params={"reset_connection": True}  # Reinicia correctamente la conexión
+#    key_params={"reset_connection": True}  # Reinicia correctamente la conexión
 )
 
 # Mostrar resultados del reconocimiento y responder
