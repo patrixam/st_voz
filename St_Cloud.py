@@ -8,6 +8,8 @@ import time
 import queue
 import speech_recognition as sr
 from gtts import gTTS
+import base64
+
 
 
 # Configuración de los servidores ICE (STUN y TURN)
