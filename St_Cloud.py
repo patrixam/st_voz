@@ -29,6 +29,7 @@ def sintetizar_texto(texto):
     engine.setProperty('volume', 1.0)
     engine.say(texto)
     engine.runAndWait()
+    engine.stop()
 
 # Interfaz principal de Streamlit
 st.title("Reconocimiento y Síntesis de Voz con Streamlit")
