@@ -4,3 +4,4 @@ numpy
 av
 SpeechRecognition
 gTTS
+aioice==0.7.2
