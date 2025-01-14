@@ -43,7 +43,7 @@ webrtc_ctx = webrtc_streamer(
     audio_receiver_size=1024,
 )
 
-if st.button("Mostrar Frames Capturados"):
+if st.button("Ver Estado del Receptor de Audio"):
     status_indicator.write("Loading...")
     if webrtc_ctx.audio_receiver:
         audio_processor= webrtc_ctx.audio_processor
@@ -59,9 +59,6 @@ if st.button("Mostrar Frames Capturados"):
             st.write("No se capturaron frames.")
     else:
         st.write("No hay recepción de audio disponible.")
-
-
-if st.button("Ver Estado del Receptor de Audio"):
     st.write("Audio Receiver:", webrtc_ctx.audio_receiver)
     st.write("Frames:", webrtc_ctx.audio_processor.frames)
     st.write("Frames2:",audio_frames)
