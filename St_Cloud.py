@@ -29,7 +29,7 @@ class AudioProcessor(AudioProcessorBase):
 # Inicializa el componente de captura de audio usando la nueva sintaxis
 webrtc_ctx = webrtc_streamer(
     key="audio",
-    mode="sendrecv",
+    mode=WebRtcMode.SENDRECV,
     rtc_configuration={"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]},
     media_stream_constraints={"audio": True, "video": False},
     audio_processor_factory=AudioProcessor,
