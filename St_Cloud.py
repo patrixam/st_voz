@@ -11,6 +11,19 @@ st.markdown("""
 Esta aplicación captura audio en tiempo real desde el navegador y, al pulsar **Procesar Audio**, lo combina para ejecutar el reconocimiento de voz usando la API de Google.
 """)
 
+rtc_configuration={
+    "iceServers": [
+        {"urls": ["stun:stun.l.google.com:19302"]},
+        # Ejemplo de configuración TURN (reemplaza con tus credenciales)
+        {
+            "urls": ["turn:your.turn.server:3478"],
+            "username": "your_username",
+            "credential": "your_password"
+        }
+    ]
+}
+
+
 # Clase que procesa el audio recibido
 class AudioProcessor(AudioProcessorBase):
     def __init__(self) -> None:
