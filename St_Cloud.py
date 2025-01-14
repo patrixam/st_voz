@@ -37,7 +37,7 @@ class AudioProcessor(AudioProcessorBase):
 
 webrtc_ctx = webrtc_streamer(
     key="speech-to-text",
-    mode=WebRtcMode.SENDONLY,  # O prueba SENDRECV para comparar
+    mode=WebRtcMode.SENDRECV,  # O prueba SENDRECV para comparar
     rtc_configuration=rtc_configuration,
     media_stream_constraints={"audio": True, "video": False},
     audio_processor_factory=AudioProcessor,
