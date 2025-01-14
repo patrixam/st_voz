@@ -2,12 +2,12 @@ import streamlit as st
 from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 import speech_recognition as sr
 import pyttsx3
-from collections import deque
 
 # Clase para procesar audio
 class AudioProcessor(AudioProcessorBase):
     def __init__(self):
         self.recognizer = sr.Recognizer()
+        self.result = None
 
     def recv_queued(self, frames, sample_rate):
         # Combinar frames en un solo buffer
@@ -16,12 +16,11 @@ class AudioProcessor(AudioProcessorBase):
         # Procesar audio con speech_recognition
         audio = sr.AudioData(audio_data, sample_rate, 2)
         try:
-            texto = self.recognizer.recognize_google(audio, language="es-ES")
-            st.session_state["texto"] = texto  # Usa session_state para mantener el contexto
+            self.result = self.recognizer.recognize_google(audio, language="es-ES")
         except sr.UnknownValueError:
-            st.session_state["texto"] = "No se entendió lo que dijiste."
+            self.result = "No se entendió lo que dijiste."
         except sr.RequestError as e:
-            st.session_state["texto"] = f"Error en el servicio de reconocimiento: {e}"
+            self.result = f"Error en el servicio de reconocimiento: {e}"
 
 # Función para sintetizar texto a voz
 def sintetizar_texto(texto):
@@ -37,7 +36,7 @@ st.title("Reconocimiento y Síntesis de Voz con Streamlit")
 st.write("Pulsa el botón para hablar.")
 
 # Streamer de WebRTC
-webrtc_streamer(
+state = webrtc_streamer(
     key="speech-to-text",
     mode=WebRtcMode.SENDRECV,
     audio_processor_factory=AudioProcessor,
@@ -46,13 +45,14 @@ webrtc_streamer(
 )
 
 # Mostrar resultados del reconocimiento y responder
-if "texto" in st.session_state:
-    st.write(f"Dijiste: **{st.session_state['texto']}**")
+if state and state.audio_processor and state.audio_processor.result:
+    texto_dicho = state.audio_processor.result
+    st.write(f"Dijiste: **{texto_dicho}**")
 
     # Lógica de respuesta
-    if "hola" in st.session_state["texto"].lower():
+    if "hola" in texto_dicho.lower():
         respuesta = "¡Hola! ¿Cómo puedo ayudarte?"
-    elif "adiós" in st.session_state["texto"].lower():
+    elif "adiós" in texto_dicho.lower():
         respuesta = "Adiós, que tengas un buen día."
     else:
         respuesta = "No estoy seguro de cómo responder a eso."
@@ -61,3 +61,7 @@ if "texto" in st.session_state:
 
     # Sintetizar respuesta
     sintetizar_texto(respuesta)
+
+    # Limpiar el resultado para permitir nuevas grabaciones
+    state.audio_processor.result = None
+
