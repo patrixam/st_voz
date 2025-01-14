@@ -21,10 +21,23 @@ class AudioProcessor(AudioProcessorBase):
         super().__init__()
         self.frames = []
 
-    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-        data = frame.to_ndarray()
-        self.frames.append(data)
-        return frame
+    async def recv_queued(self) -> av.AudioFrame:
+        """
+        Esta función se encarga de consumir todos los frames disponibles en la cola
+        y acumularlos en self.frames. Se retorna el último frame recibido para mantener
+        el stream visible.
+        """
+        frames = []
+        while not self.queued_frames.empty():
+            frame = await self.queued_frames.get()
+            frames.append(frame)
+        if frames:
+            # Acumula todos los frames recibidos en esta tanda
+            self.frames.extend(frames)
+            # Retorna el último frame para la actualización del stream en la interfaz
+            return frames[-1]
+        # Si no hay frames, retornamos None
+        return None
 
 webrtc_ctx = webrtc_streamer(
     key="audio_test",
