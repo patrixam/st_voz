@@ -164,8 +164,8 @@ if st.session_state.mode == "idle":
         st.experimental_rerun()
 
 # Si estamos en modo "listening" o "responding", activa autorefresh (cada 1 segundo)
-if st.session_state.mode in ["listening", "responding"]:
-    st_autorefresh(interval=1000, limit=0, key="conversation_refresh")
+#if st.session_state.mode in ["listening", "responding"]:
+#    st_autorefresh(interval=1000, limit=0, key="conversation_refresh")
 
 # Lógica para el modo "listening": grabar y convertir a texto
 if st.session_state.mode == "listening":
