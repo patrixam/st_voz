@@ -106,7 +106,7 @@ def responder(texto):
     audio_bytes = io.BytesIO()
     tts.write_to_fp(audio_bytes)
     audio_bytes.seek(0)
-    st.audio(audio_bytes, format="audio/mp3")
+   # st.audio(audio_bytes, format="audio/mp3")
     return resp
 
 # Función para procesar el audio y convertirlo a texto
