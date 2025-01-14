@@ -35,7 +35,7 @@ class AudioProcessor(AudioProcessorBase):
 
 webrtc_ctx = webrtc_streamer(
     key="speech-to-text",
-    mode=WebRtcMode.SENDRECV,
+    mode=WebRtcMode.SENDONLY,
     rtc_configuration=rtc_configuration,
     media_stream_constraints={"audio": True, "video": False},
     audio_processor_factory=AudioProcessor,
@@ -44,7 +44,12 @@ webrtc_ctx = webrtc_streamer(
 
 if st.button("Mostrar Frames Capturados"):
     if webrtc_ctx.audio_receiver:
-        audio_processor = webrtc_ctx.audio_processor
+        try:
+            audio_frames = webrtc_ctx.audio_receiver.get_frames(timeout=1)
+        except queue.Empty:
+            time.sleep(0.1)
+            status_indicator.write("No frame arrived.")
+            continue
         if audio_processor and hasattr(audio_processor, 'frames'):
             st.write(f"Frames capturados: {len(audio_processor.frames)}")
         else:
@@ -56,6 +61,7 @@ if st.button("Mostrar Frames Capturados"):
 if st.button("Ver Estado del Receptor de Audio"):
     st.write("Audio Receiver:", webrtc_ctx.audio_receiver)
     st.write("Frames:", webrtc_ctx.audio_processor.frames)
+    st.write("Frames2:",audio_frames)
     st.write("Atributos disponibles:", dir(webrtc_ctx))
 
 
