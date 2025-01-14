@@ -51,7 +51,6 @@ if st.button("Mostrar Frames Capturados"):
         except queue.Empty:
             time.sleep(0.1)
             status_indicator.write("No frame arrived.")
-            continue
             
         if audio_processor and hasattr(audio_processor, 'frames'):
             st.write(f"Frames capturados: {len(audio_processor.frames)}")
