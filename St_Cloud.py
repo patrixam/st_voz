@@ -7,9 +7,9 @@ rtc_configuration = {
     "iceServers": [
         {"urls": ["stun:stun.l.google.com:19302"]},  # Servidor STUN (público)
         {
-            "urls": ["turn:tu.turn.server:3478"],      # Servidor TURN
-            "username": "tu_usuario",
-            "credential": "tu_credencial"
+            "urls": ["turn:relay1.expressturn.com:3478"],  # Tu servidor TURN
+            "username": "efBBNFJF1809NYOOA7",
+            "credential": "mFYpag3yUL3bHv9j"
         }
     ]
 }
