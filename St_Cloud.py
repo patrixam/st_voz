@@ -82,30 +82,38 @@ if st.button("Convertir Audio a Texto"):
 
     if audio_frames:
         try:
-            # Convertir cada frame a un arreglo NumPy y concatenarlos a lo largo de la dimensión del tiempo.
-            # Aquí asumimos que cada frame tiene forma (n_channels, n_samples)
+            # Concatenar todos los frames a lo largo del eje 1.
             all_samples = np.concatenate([frame.to_ndarray() for frame in audio_frames], axis=1)
         except Exception as e:
             st.error(f"Error al concatenar frames: {e}")
             all_samples = None
-
+    
         if all_samples is not None:
-            # Establece parámetros (ajusta según lo que recibas; aquí usamos valores habituales)
+            # Obtener el sample_rate del primer frame y tratar de obtener los canales.
             sample_rate = audio_frames[0].sample_rate if audio_frames else 48000
-            n_channels = audio_frames[0].layout.channels if audio_frames else 1
-
+            
+            # Intentamos extraer el número de canales. 
+            # Si no está definido o es 0, usamos 2 como valor por defecto.
+            try:
+                n_channels = audio_frames[0].layout.channels
+                if not n_channels or n_channels < 1:
+                    raise ValueError("Número de canales no válido")
+            except Exception as e:
+                st.warning("No se pudo obtener el número de canales, usando 2 canales por defecto.")
+                n_channels = 2
+    
             # Crear un archivo WAV en memoria
             wav_bytes_io = io.BytesIO()
             try:
                 with wave.open(wav_bytes_io, "wb") as wf:
                     wf.setnchannels(n_channels)
-                    wf.setsampwidth(2)  # Asumiendo 16 bits (2 bytes)
+                    wf.setsampwidth(2)  # 16 bits => 2 bytes
                     wf.setframerate(sample_rate)
-                    # Convertir a int16 si no lo es
                     if all_samples.dtype != np.int16:
                         all_samples = all_samples.astype(np.int16)
                     wf.writeframes(all_samples.tobytes())
                 wav_bytes_io.seek(0)
+                st.success("Archivo WAV generado con éxito.")
             except Exception as e:
                 st.error(f"Error al crear el archivo WAV: {e}")
                 wav_bytes_io = None
