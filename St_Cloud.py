@@ -57,6 +57,11 @@ if st.button("Mostrar Frames Capturados"):
     else:
         st.write("No hay recepción de audio disponible.")
 
+if st.button("Ver Estado del Receptor de Audio"):
+    st.write("Audio Receiver:", webrtc_ctx.audio_receiver)
+    st.write("Atributos disponibles:", dir(webrtc_ctx))
+
+
 
 
 
