@@ -44,7 +44,7 @@ state = webrtc_streamer(
     media_stream_constraints={"audio": True, "video": False},
     async_processing=True,  # Procesamiento asíncrono para evitar bloqueos
 )
-
+print(state)
 # Mostrar resultados del reconocimiento y responder
 if state and state.audio_processor and state.audio_processor.result:
     texto_dicho = state.audio_processor.result
