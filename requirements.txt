@@ -3,7 +3,6 @@ streamlit-webrtc==0.45.1
 speechrecognition==3.8.1
 pyttsx3==2.90
 pydub==0.25.1
-pyaudio==0.2.13
 av
 numpy
 gTTS
