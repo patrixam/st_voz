@@ -1,6 +1,6 @@
-streamlit
-streamlit_webrtc
-speechrecognition
-pyttsx3
-pydub
-pyaudio
+streamlit==1.25.0
+streamlit-webrtc==0.45.1
+speechrecognition==3.8.1
+pyttsx3==2.90
+pydub==0.25.1
+
