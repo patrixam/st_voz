@@ -7,7 +7,8 @@ import wave
 import time
 import queue
 import speech_recognition as sr
-import pyttsx3
+from gtts import gTTS
+
 
 # Configuración de los servidores ICE (STUN y TURN)
 rtc_configuration = {
@@ -101,13 +102,11 @@ def responder(texto):
         resp = "No estoy seguro de cómo responder a eso."
     
     # Inicializar el motor de síntesis de voz
-    sintetizador = pyttsx3.init()
-    sintetizador.setProperty('rate', 150)
-    sintetizador.setProperty('volume', 1.0)
-    sintetizador.say(resp)
-    sintetizador.runAndWait()
-    sintetizador.stop()
-    
+    tts = gTTS(resp, lang="es")
+    audio_bytes = io.BytesIO()
+    tts.write_to_fp(audio_bytes)
+    audio_bytes.seek(0)
+    st.audio(audio_bytes, format="audio/mp3")
     return resp
 
 # Función para procesar el audio y convertirlo a texto
@@ -143,6 +142,8 @@ def speech_to_text():
     except sr.RequestError as e:
         st.error(f"Error en el servicio de reconocimiento: {e}")
         return None
+
+
 
 # Interfaz de usuario
 st.markdown("### Controles de la Aplicación")
