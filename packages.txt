@@ -3,3 +3,4 @@ libjpeg-dev
 libpng-dev
 portaudio19-dev
 espeak
+alsa-utils
