@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
+from streamlit_autorefresh import st_autorefresh
 import numpy as np
 import av
 import io
@@ -10,9 +11,7 @@ import speech_recognition as sr
 from gtts import gTTS
 import base64
 
-
-
-# Configuración de los servidores ICE (STUN y TURN)
+# Configuración de ICE (STUN y TURN)
 rtc_configuration = {
     "iceServers": [
         {"urls": ["stun:stun.l.google.com:19302"]},
@@ -24,17 +23,23 @@ rtc_configuration = {
     ]
 }
 
-st.title("Demo de Reconocimiento y Síntesis de Voz")
+# Título y descripción
+st.title("Conversación de Voz a Texto y Síntesis de Voz")
 st.markdown("""
-Esta aplicación captura audio en tiempo real a través de WebRTC, lo convierte a texto usando la API de Google Speech Recognition y genera una respuesta (con lógica básica) que se sintetiza con pyttsx3.
+Esta aplicación captura tu voz, la convierte a texto y genera una respuesta automáticamente.  
+El sistema mantiene el historial de la conversación y, una vez que se responde, vuelve a escuchar.
 """)
 
-# Definir la clase AudioProcessor
+# Inicializar variables de sesión para el modo y el historial
+if "conversation_history" not in st.session_state:
+    st.session_state.conversation_history = []  # Lista de tuplas (emisor, mensaje)
+if "mode" not in st.session_state:
+    st.session_state.mode = "idle"  # Puede ser "idle", "listening" o "responding"
+
+# --- Definición de AudioProcessor ---
 class AudioProcessor(AudioProcessorBase):
     def __init__(self):
         super().__init__()
-        # Aunque en SENDONLY la acumulación directa en self.frames puede no usarse,
-        # la dejamos para depuración o usos futuros.
         self.frames = []
 
     async def recv_queued(self) -> av.AudioFrame:
@@ -44,11 +49,11 @@ class AudioProcessor(AudioProcessorBase):
             frames.append(frame)
         if frames:
             self.frames.extend(frames)
-            # Retorna el último frame para mantener el stream actualizado (no se reproduce en SENDONLY)
+            # Retornamos el último frame para mantener la actualización interna
             return frames[-1]
         return None
 
-# Inicializar el componente de WebRTC en modo SENDONLY (sin reproducción local)
+# --- Inicializar streamlit-webrtc (modo SENDONLY para capturar sin reproducir localmente) ---
 webrtc_ctx = webrtc_streamer(
     key="speech-to-text",
     mode=WebRtcMode.SENDONLY,
@@ -58,16 +63,14 @@ webrtc_ctx = webrtc_streamer(
     audio_receiver_size=1024,
 )
 
-# Función para convertir los frames a un archivo WAV en memoria
+# --- Función: convertir frames a WAV ---
 def frames_to_wav(frames):
     try:
-        # Convertir cada frame a un arreglo NumPy y concatenarlos a lo largo de la dimensión del tiempo.
         all_samples = np.concatenate([frame.to_ndarray() for frame in frames], axis=1)
     except Exception as e:
         st.error(f"Error al concatenar frames: {e}")
         return None
 
-    # Obtener parámetros del primer frame (con valores por defecto en caso de fallo)
     sample_rate = frames[0].sample_rate if frames else 48000
     try:
         n_channels = frames[0].layout.channels
@@ -83,7 +86,6 @@ def frames_to_wav(frames):
             wf.setnchannels(n_channels)
             wf.setsampwidth(2)  # 16 bits = 2 bytes
             wf.setframerate(sample_rate)
-            # Asegurarse de que los datos sean int16
             if all_samples.dtype != np.int16:
                 all_samples = all_samples.astype(np.int16)
             wf.writeframes(all_samples.tobytes())
@@ -93,37 +95,9 @@ def frames_to_wav(frames):
         st.error(f"Error al crear el archivo WAV: {e}")
         return None
 
-# Función para sintetizar respuesta utilizando pyttsx3 (se ejecuta en el servidor)
-def responder(texto):
-    # Lógica básica de respuesta:
-    if "hola" in texto.lower():
-        resp = "¡Hola! ¿Cómo puedo ayudarte?"
-    elif "adiós" in texto.lower():
-        resp = "Adiós, que tengas un buen día."
-    else:
-        resp = "No estoy seguro de cómo responder a eso."
-    
-    # Inicializar el motor de síntesis de voz
-    tts = gTTS(resp, lang="es")
-    audio_bytes = io.BytesIO()
-    tts.write_to_fp(audio_bytes)
-    audio_bytes.seek(0)
-   # st.audio(audio_bytes, format="audio/mp3")
-    # Convertir el audio a base64
-    audio_base64 = base64.b64encode(audio_bytes.read()).decode("utf-8")
-    # Construir el HTML con la etiqueta <audio> y atributo autoplay.
-    html_code = f"""
-        <audio autoplay>
-            <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
-            Tu navegador no soporta la reproducción automática.
-        </audio>
-    """
-    st.markdown(html_code, unsafe_allow_html=True)
-    return resp
-
-# Función para procesar el audio y convertirlo a texto
+# --- Función: convertir audio capturado a texto ---
 def speech_to_text():
-    # Esperar unos segundos para acumular audio (ajusta según necesidad)
+    # Esperamos unos segundos para acumular audio
     time.sleep(3)
     try:
         frames = webrtc_ctx.audio_receiver.get_frames(timeout=3)
@@ -135,13 +109,11 @@ def speech_to_text():
         st.error("No hay frames de audio para procesar.")
         return None
 
-    # Crear archivo WAV a partir de los frames recibidos
     wav_file = frames_to_wav(frames)
     if not wav_file:
         st.error("Error al crear el archivo de audio.")
         return None
 
-    # Usar SpeechRecognition para convertir el audio a texto
     reconocedor = sr.Recognizer()
     try:
         with sr.AudioFile(wav_file) as source:
@@ -155,19 +127,81 @@ def speech_to_text():
         st.error(f"Error en el servicio de reconocimiento: {e}")
         return None
 
-
-
-# Interfaz de usuario
-st.markdown("### Controles de la Aplicación")
-if st.button("Hablar"):
-    st.info("Grabando audio... Por favor, habla ahora.")
-    texto_dicho = speech_to_text()
-    if texto_dicho:
-        st.write(f"**Dijiste:** {texto_dicho}")
-        respuesta_texto = responder(texto_dicho)
-        st.write(f"**Respuesta:** {respuesta_texto}")
+# --- Función: sintetiza respuesta con gTTS y retorna texto y audio en base64 ---
+def responder_con_gTTS(texto):
+    if "hola" in texto.lower():
+        resp = "¡Hola! ¿Cómo puedo ayudarte?"
+    elif "adiós" in texto.lower():
+        resp = "Adiós, que tengas un buen día."
     else:
-        st.error("No se pudo obtener texto del audio.")
+        resp = "No estoy seguro de cómo responder a eso."
+    try:
+        tts = gTTS(resp, lang="es")
+        audio_bytes = io.BytesIO()
+        tts.write_to_fp(audio_bytes)
+        audio_bytes.seek(0)
+        audio_base64 = base64.b64encode(audio_bytes.read()).decode("utf-8")
+        return resp, audio_base64
+    except Exception as e:
+        st.error(f"Error al sintetizar la voz: {e}")
+        return resp, None
+
+# --- Función: inyecta HTML para reproducir audio automáticamente ---
+def reproducir_audio_autoplay(audio_base64):
+    html_code = f"""
+        <audio autoplay>
+            <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+            Tu navegador no soporta la reproducción automática.
+        </audio>
+    """
+    st.markdown(html_code, unsafe_allow_html=True)
+
+# --- Modo conversacional ---
+# Si el modo es "idle" mostramos un botón para iniciar la conversación
+if st.session_state.mode == "idle":
+    if st.button("Iniciar Conversación"):
+        st.session_state.mode = "listening"
+        st.experimental_rerun()
+
+# Si estamos en modo "listening" o "responding", activa autorefresh (cada 1 segundo)
+if st.session_state.mode in ["listening", "responding"]:
+    st_autorefresh(interval=1000, limit=0, key="conversation_refresh")
+
+# Lógica para el modo "listening": grabar y convertir a texto
+if st.session_state.mode == "listening":
+    st.info("Escuchando... Por favor, habla ahora.")
+    texto_dicho = speech_to_text()
+    if texto_dicho is not None:
+        st.session_state.conversation_history.append(("Usuario", texto_dicho))
+        st.session_state.mode = "responding"
+        st.experimental_rerun()
+
+# Lógica para el modo "responding": generar respuesta y reproducir audio
+if st.session_state.mode == "responding":
+    st.info("Generando respuesta...")
+    # Se usa el último mensaje del usuario para generar respuesta
+    texto_ultimo = st.session_state.conversation_history[-1][1]
+    respuesta_texto, audio_base64 = responder_con_gTTS(texto_ultimo)
+    st.session_state.conversation_history.append(("Sistema", respuesta_texto))
+    st.write(f"**Respuesta:** {respuesta_texto}")
+    if audio_base64:
+        reproducir_audio_autoplay(audio_base64)
+    # Luego, una vez reproducida la respuesta, se vuelve a escuchar.
+    # Ajusta el tiempo de espera según la duración del audio (aquí ponemos 5 segundos por ejemplo)
+    time.sleep(5)
+    st.session_state.mode = "listening"
+    st.experimental_rerun()
+
+# Mostrar el historial de conversación
+st.markdown("### Historial de la Conversación")
+for emisor, mensaje in st.session_state.conversation_history:
+    st.write(f"**{emisor}:** {mensaje}")
+
+# Botón para limpiar la conversación
+if st.button("Limpiar Conversación"):
+    st.session_state.conversation_history = []
+    st.session_state.mode = "idle"
+    st.experimental_rerun()
 
 
 
