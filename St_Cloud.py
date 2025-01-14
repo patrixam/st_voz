@@ -15,6 +15,7 @@ rtc_configuration = {
 }
 
 st.title("Prueba de Captura de Audio")
+status_indicator = st.empty()
 
 class AudioProcessor(AudioProcessorBase):
     def __init__(self):
@@ -43,6 +44,7 @@ webrtc_ctx = webrtc_streamer(
 )
 
 if st.button("Mostrar Frames Capturados"):
+    status_indicator.write("Loading...")
     if webrtc_ctx.audio_receiver:
         try:
             audio_frames = webrtc_ctx.audio_receiver.get_frames(timeout=1)
@@ -50,6 +52,7 @@ if st.button("Mostrar Frames Capturados"):
             time.sleep(0.1)
             status_indicator.write("No frame arrived.")
             continue
+            
         if audio_processor and hasattr(audio_processor, 'frames'):
             st.write(f"Frames capturados: {len(audio_processor.frames)}")
         else:
