@@ -10,6 +10,7 @@ class AudioProcessor(AudioProcessorBase):
         self.result = None
 
     def recv_queued(self, frames, sample_rate):
+        print("Procesando audio...")
         # Combinar frames en un solo buffer
         audio_data = b"".join(frame.to_ndarray().tobytes() for frame in frames)
 
