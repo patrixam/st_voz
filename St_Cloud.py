@@ -54,28 +54,28 @@ webrtc_ctx = webrtc_streamer(
 )
 
 if process_clicked:
-if "texto" in st.session_state:
-    st.write(f"Dijiste: {st.session_state['texto']}")
+    if "texto" in st.session_state:
+        st.write(f"Dijiste: {st.session_state['texto']}")
+        
+        # Generar respuesta
+        if "hola" in st.session_state["texto"].lower():
+            respuesta = "¡Hola! ¿Cómo estás?"
+        elif "adiós" in st.session_state["texto"].lower():
+            respuesta = "Adiós, que tengas un buen día."
+        else:
+            respuesta = "No estoy seguro de cómo responder a eso."
+        
+        st.write(f"Respuesta: {respuesta}")
+        
+        # Generar síntesis de voz y reproducir
+        archivo_respuesta = sintetizar_texto(respuesta)
+        st.audio(archivo_respuesta)
     
-    # Generar respuesta
-    if "hola" in st.session_state["texto"].lower():
-        respuesta = "¡Hola! ¿Cómo estás?"
-    elif "adiós" in st.session_state["texto"].lower():
-        respuesta = "Adiós, que tengas un buen día."
+        # Eliminar archivo temporal después de reproducir
+        if os.path.exists(archivo_respuesta):
+            os.remove(archivo_respuesta)
     else:
-        respuesta = "No estoy seguro de cómo responder a eso."
-    
-    st.write(f"Respuesta: {respuesta}")
-    
-    # Generar síntesis de voz y reproducir
-    archivo_respuesta = sintetizar_texto(respuesta)
-    st.audio(archivo_respuesta)
-
-    # Eliminar archivo temporal después de reproducir
-    if os.path.exists(archivo_respuesta):
-        os.remove(archivo_respuesta)
-else:
-    st.warning("La recepción de audio no está disponible.")
+        st.warning("La recepción de audio no está disponible.")
 
 
 
