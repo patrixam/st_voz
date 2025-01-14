@@ -4,7 +4,7 @@ import io
 import wave
 import av
 import speech_recognition as sr
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
+from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 
 st.title("Captura y Reconocimiento de Audio con streamlit-webrtc")
 st.markdown("""
