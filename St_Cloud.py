@@ -41,7 +41,7 @@ class AudioProcessor(AudioProcessorBase):
 
 webrtc_ctx = webrtc_streamer(
     key="audio_test",
-    mode=WebRtcMode.SENDRECV,
+    mode=WebRtcMode.SENDONLY,
     rtc_configuration=rtc_configuration,
     media_stream_constraints={"audio": True, "video": False},
     audio_processor_factory=AudioProcessor,
