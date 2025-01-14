@@ -46,6 +46,7 @@ webrtc_ctx = webrtc_streamer(
 if st.button("Mostrar Frames Capturados"):
     status_indicator.write("Loading...")
     if webrtc_ctx.audio_receiver:
+        audio_processor= webrtc_ctx.audio_processor
         try:
             audio_frames = webrtc_ctx.audio_receiver.get_frames(timeout=1)
         except queue.Empty:
