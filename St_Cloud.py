@@ -43,7 +43,6 @@ webrtc_streamer(
     audio_processor_factory=AudioProcessor,
     media_stream_constraints={"audio": True, "video": False},
     async_processing=True,  # Procesamiento asíncrono para evitar bloqueos
-    buffer_factory=lambda: deque(maxlen=64),  # Tamaño del buffer para evitar pérdida de frames
 )
 
 # Mostrar resultados del reconocimiento y responder
