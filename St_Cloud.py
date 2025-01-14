@@ -14,7 +14,7 @@ Esta aplicación captura audio en tiempo real desde el navegador.
 - Usa **Procesar Audio** para obtener la transcripción y generar una respuesta de voz.
 """)
 
-# --- Función para sintetizar texto y retornar un objeto BytesIO con audio MP3 ---
+# Función para sintetizar texto en memoria (BytesIO)
 def sintetizar_texto_bytes(texto):
     tts = gTTS(texto, lang="es")
     mp3_fp = io.BytesIO()
@@ -22,33 +22,37 @@ def sintetizar_texto_bytes(texto):
     mp3_fp.seek(0)
     return mp3_fp
 
-# --- Inicializar un contador en session_state para generar un key dinámico ---
+# Inicializar contador en session_state para generar un key dinámico
 if "record_count" not in st.session_state:
     st.session_state.record_count = 0
 
-# --- Clase que acumula los frames de audio ---
+# Clase que acumula los frames de audio y muestra debug
 class AudioProcessor(AudioProcessorBase):
     def __init__(self):
         super().__init__()
         self.frames = []  # Acumula los frames de audio
 
     def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-        # Convertir el frame a un array numpy y acumularlo
-        self.frames.append(frame.to_ndarray())
+        try:
+            data = frame.to_ndarray()
+            self.frames.append(data)
+            # Opcional: mostrar solo el primer frame para no saturar el output
+            if len(self.frames) == 1:
+                st.write(f"Primer frame recibido: shape={data.shape}, dtype={data.dtype}")
+        except Exception as e:
+            st.write(f"Error procesando frame: {e}")
         return frame
 
-# --- Área de botones en dos columnas ---
+# Área de botones en dos columnas
 col1, col2 = st.columns(2)
-
 with col1:
     if st.button("Nueva Grabación"):
-        # Incrementa el contador para generar un nuevo key (reinicia el componente)
-        st.session_state.record_count += 1
+        st.session_state.record_count += 1  # Reinicia el componente usando un key nuevo
 
 with col2:
     process_clicked = st.button("Procesar Audio")
 
-# --- Inicializar (o reinicializar) el componente de captura de audio con un key dinámico ---
+# Inicializar el componente WebRTC con key dinámica
 webrtc_ctx = webrtc_streamer(
     key=f"speech-to-text_{st.session_state.record_count}",
     mode=WebRtcMode.SENDRECV,
@@ -57,21 +61,22 @@ webrtc_ctx = webrtc_streamer(
     audio_processor_factory=AudioProcessor,
 )
 
-# --- Al pulsar "Procesar Audio", se procesa el audio acumulado ---
 if process_clicked:
     if webrtc_ctx.audio_receiver is not None:
-        # Obtener todos los frames acumulados
         audio_frames = webrtc_ctx.audio_receiver.get_frames()
+        st.write(f"Cantidad de frames capturados: {len(audio_frames)}")  # Debug
         if audio_frames:
-            # Combinar los datos de audio a lo largo del eje temporal
-            # Cada frame es un array; se concatenan horizontalmente.
-            all_samples = np.concatenate(
-                [frame.to_ndarray() for frame in audio_frames], axis=1
-            )
+            # Combina los datos de audio de todos los frames
+            try:
+                all_samples = np.concatenate(
+                    [frame.to_ndarray() for frame in audio_frames], axis=1
+                )
+            except Exception as e:
+                st.error(f"Error al concatenar frames: {e}")
             sample_rate = audio_frames[0].sample_rate
             n_channels = audio_frames[0].layout.channels
 
-            # Crear un archivo WAV en memoria con los datos combinados
+            # Crear un archivo WAV en memoria
             wav_bytes_io = io.BytesIO()
             with wave.open(wav_bytes_io, "wb") as wf:
                 wf.setnchannels(n_channels)
@@ -82,7 +87,7 @@ if process_clicked:
                 wf.writeframes(all_samples.tobytes())
             wav_bytes_io.seek(0)
 
-            # Reconocimiento de voz usando SpeechRecognition y Google Speech API
+            # Reconocimiento de voz
             reconocedor = sr.Recognizer()
             with sr.AudioFile(wav_bytes_io) as source:
                 audio_data = reconocedor.record(source)
@@ -101,23 +106,18 @@ if process_clicked:
     else:
         st.warning("La recepción de audio no está disponible.")
 
-# --- Si se obtuvo texto reconocido, generar respuesta y síntesis de voz ---
 if "texto" in st.session_state and st.session_state["texto"]:
     st.write(f"**Dijiste:** {st.session_state['texto']}")
-    
-    # Lógica básica de respuesta según el texto reconocido
     if "hola" in st.session_state["texto"].lower():
         respuesta = "¡Hola! ¿Cómo estás?"
     elif "adiós" in st.session_state["texto"].lower():
         respuesta = "Adiós, que tengas un buen día."
     else:
         respuesta = "No estoy seguro de cómo responder a eso."
-    
     st.write(f"**Respuesta:** {respuesta}")
-    
-    # Realizar la síntesis de voz en memoria
     audio_bytes = sintetizar_texto_bytes(respuesta)
     st.audio(audio_bytes, format="audio/mp3")
+
 
 
 
