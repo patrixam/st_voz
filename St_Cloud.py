@@ -107,6 +107,16 @@ def responder(texto):
     tts.write_to_fp(audio_bytes)
     audio_bytes.seek(0)
    # st.audio(audio_bytes, format="audio/mp3")
+    # Convertir el audio a base64
+    audio_base64 = base64.b64encode(audio_bytes.read()).decode("utf-8")
+    # Construir el HTML con la etiqueta <audio> y atributo autoplay.
+    html_code = f"""
+        <audio autoplay>
+            <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
+            Tu navegador no soporta la reproducción automática.
+        </audio>
+    """
+    st.markdown(html_code, unsafe_allow_html=True)
     return resp
 
 # Función para procesar el audio y convertirlo a texto
