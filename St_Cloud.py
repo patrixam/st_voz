@@ -6,16 +6,15 @@ import pyttsx3
 # Clase para procesar audio
 class AudioProcessor(AudioProcessorBase):
     def __init__(self):
+        print("inicio")
         self.recognizer = sr.Recognizer()
         self.result = None
 
-    def recv_queued(self, frames, sample_rate):
+    def recv(self, frame):
+        # Procesar un solo frame de audio
         print("Procesando audio...")
-        # Combinar frames en un solo buffer
-        audio_data = b"".join(frame.to_ndarray().tobytes() for frame in frames)
-
-        # Procesar audio con speech_recognition
-        audio = sr.AudioData(audio_data, sample_rate, 2)
+        audio_data = frame.to_ndarray().tobytes()
+        audio = sr.AudioData(audio_data, frame.sample_rate, 2)
         try:
             self.result = self.recognizer.recognize_google(audio, language="es-ES")
         except sr.UnknownValueError:
@@ -25,6 +24,7 @@ class AudioProcessor(AudioProcessorBase):
 
 # Función para sintetizar texto a voz
 def sintetizar_texto(texto):
+    print("sintetiza texto")
     engine = pyttsx3.init()
     engine.setProperty('rate', 150)
     engine.setProperty('volume', 1.0)
@@ -36,16 +36,16 @@ def sintetizar_texto(texto):
 st.title("Reconocimiento y Síntesis de Voz con Streamlit")
 
 st.write("Pulsa el botón para hablar.")
-
+print("App Iniciada")
 # Streamer de WebRTC
 state = webrtc_streamer(
     key="speech-to-text",
     mode=WebRtcMode.SENDRECV,
     audio_processor_factory=AudioProcessor,
     media_stream_constraints={"audio": True, "video": False},
-    async_processing=True,  # Procesamiento asíncrono para evitar bloqueos
+    async_processing=False,  # Procesamiento síncrono para evitar problemas de contexto
 )
-print(state)
+
 # Mostrar resultados del reconocimiento y responder
 if state and state.audio_processor and state.audio_processor.result:
     texto_dicho = state.audio_processor.result
