@@ -1,3 +1,4 @@
+portaudio19-dev
 streamlit
 streamlit-webrtc
 speechrecognition
