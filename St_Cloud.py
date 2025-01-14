@@ -34,11 +34,12 @@ class AudioProcessor(AudioProcessorBase):
 
 
 webrtc_ctx = webrtc_streamer(
-    key="audio_test",
+    key="speech-to-text",
     mode=WebRtcMode.SENDRECV,
     rtc_configuration=rtc_configuration,
     media_stream_constraints={"audio": True, "video": False},
     audio_processor_factory=AudioProcessor,
+    audio_receiver_size=1024,
 )
 
 if st.button("Mostrar Frames Capturados"):
