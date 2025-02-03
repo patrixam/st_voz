@@ -32,11 +32,13 @@ Esta aplicación captura tu voz, la convierte a texto y genera una respuesta aut
 El sistema mantiene el historial de la conversación y, una vez que se responde, vuelve a escuchar.
 """)
 
-# Inicializar variables de sesión para el modo y el historial
+# Inicializar variables de sesión para el modo, el texto reconocido y el flag mute
 if "mode" not in st.session_state:
-    st.session_state.mode = "idle"  # Puede ser "idle", "listening" o "responding"
+    st.session_state.mode = "idle"  # "idle", "listening" o "responding"
 if "texto_dicho" not in st.session_state:
     st.session_state.texto_dicho = ""  # Guardará el texto reconocido
+if "mute" not in st.session_state:
+    st.session_state.mute = False     # Bloquea la captura de audio mientras se reproduce la respuesta
 
 # --- Definición de AudioProcessor ---
 class AudioProcessor(AudioProcessorBase):
@@ -99,6 +101,10 @@ def frames_to_wav(frames):
 
 # --- Función: convertir audio capturado a texto ---
 def speech_to_text():
+    # Si está en "mute" se ignora la captura
+    if st.session_state.mute:
+        return None
+
     # Esperamos unos segundos para acumular audio
     time.sleep(3)
     try:
@@ -166,35 +172,43 @@ def reproducir_audio_autoplay(audio_base64):
     components.html(html_code, height=100)
 
 # --- Modo conversacional ---
-# Si el modo es "idle" mostramos un botón para iniciar la conversación
+# Modo "idle": mostramos un botón para iniciar la conversación.
 if st.session_state.mode == "idle":
     if st.button("Iniciar Conversación"):
         st.session_state.mode = "listening"
         st.experimental_rerun()
 
-# Lógica para el modo "listening": grabar y convertir a texto
+# Modo "listening": se graba y convierte el audio a texto.
 if st.session_state.mode == "listening":
-    st.info("Escuchando... Por favor, habla ahora.")
-    texto_dicho = speech_to_text()
-    if texto_dicho is not None:
-        st.session_state.texto_dicho = texto_dicho
-        st.session_state.mode = "responding"
-    st.experimental_rerun()
+    # Si se está reproduciendo audio (mute activo), se espera para evitar feedback.
+    if st.session_state.mute:
+        st.info("Esperando a que termine la reproducción...")
+        time.sleep(5)
+        st.experimental_rerun()
+    else:
+        st.info("Escuchando... Por favor, habla ahora.")
+        texto_dicho = speech_to_text()
+        if texto_dicho is not None:
+            st.session_state.texto_dicho = texto_dicho
+            st.session_state.mode = "responding"
+        st.experimental_rerun()
 
-
-# Lógica para el modo "responding": generar respuesta y reproducir audio
+# Modo "responding": se genera la respuesta y se reproduce.
 if st.session_state.mode == "responding":
     st.info("Generando respuesta...")
-    # Usamos el texto guardado en la sesión
+    # Activamos el mute para evitar que la respuesta se capture
+    st.session_state.mute = True
     respuesta_texto, audio_base64 = responder_con_gTTS(st.session_state.texto_dicho)
     st.write(f"**Usuario:** {st.session_state.texto_dicho}")
     st.write(f"**Respuesta:** {respuesta_texto}")
     if audio_base64:
         reproducir_audio_autoplay(audio_base64)
+    # Se espera un tiempo suficiente para que se reproduzca el audio
     time.sleep(5)
+    # Desactivamos el mute y volvemos al modo de escucha
+    st.session_state.mute = False
     st.session_state.mode = "listening"
     st.experimental_rerun()
-
 
 
 
