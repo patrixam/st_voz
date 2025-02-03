@@ -136,7 +136,7 @@ def responder_con_gTTS(texto):
     else:
         resp = "No estoy seguro de cómo responder a eso."
     try:
-        del tts, audio_bytes, audio_base64
+        del audio_bytes, audio_base64
         tts = gTTS(resp, lang="es")
         audio_bytes = io.BytesIO()
         tts.write_to_fp(audio_bytes)
@@ -184,6 +184,7 @@ if st.session_state.mode == "responding":
     st.session_state.conversation_history.append(("Sistema", respuesta_texto))
     st.write(f"**Respuesta:** {respuesta_texto}")
     reproducir_audio_autoplay(audio_base64)
+    del audio_base64
     # Luego, una vez reproducida la respuesta, se vuelve a escuchar.
     # Ajusta el tiempo de espera según la duración del audio (aquí ponemos 5 segundos por ejemplo)
     time.sleep(3)
