@@ -177,6 +177,7 @@ if st.session_state.mode == "listening":
     st.info("Escuchando... Por favor, habla ahora.")
     texto_dicho = speech_to_text()
     if texto_dicho is not None:
+        st.session_state.texto_dicho = texto
         st.session_state.mode = "responding"
     st.experimental_rerun()
 
@@ -184,10 +185,10 @@ if st.session_state.mode == "listening":
 # Lógica para el modo "responding": generar respuesta y reproducir audio
 if st.session_state.mode == "responding":
     st.info("Generando respuesta...")
-    # Se usa el último mensaje del usuario para generar respuesta
-    respuesta_texto, audio_base64 = responder_con_gTTS(texto_dicho)
+    # Usamos el texto guardado en la sesión
+    respuesta_texto, audio_base64 = responder_con_gTTS(st.session_state.texto_dicho)
     st.session_state.conversation_history.append(("Sistema", respuesta_texto))
-    st.write(f"**Usuario:** {texto_dicho}")
+    st.write(f"**Usuario:** {st.session_state.texto_dicho}")
     st.write(f"**Respuesta:** {respuesta_texto}")
     if audio_base64:
         reproducir_audio_autoplay(audio_base64)
