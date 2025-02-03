@@ -155,6 +155,10 @@ def reproducir_audio_autoplay(audio_base64):
         </audio>
     """
     st.markdown(html_code, unsafe_allow_html=True)
+def reproducir_audio_streamlit(audio_base64):
+    audio_bytes = base64.b64decode(audio_base64)
+    st.audio(audio_bytes, format="audio/mp3", autoplay=True)
+
 
 # --- Modo conversacional ---
 # Si el modo es "idle" mostramos un botón para iniciar la conversación
@@ -184,7 +188,8 @@ if st.session_state.mode == "responding":
     respuesta_texto, audio_base64 = responder_con_gTTS(texto_ultimo)
     st.session_state.conversation_history.append(("Sistema", respuesta_texto))
     st.write(f"**Respuesta:** {respuesta_texto}")
-    reproducir_audio_autoplay(audio_base64)
+    reproducir_audio_streamlit(audio_base64)
+   # reproducir_audio_autoplay(audio_base64)
     # Luego, una vez reproducida la respuesta, se vuelve a escuchar.
     # Ajusta el tiempo de espera según la duración del audio (aquí ponemos 5 segundos por ejemplo)
     time.sleep(5)
