@@ -177,7 +177,7 @@ if st.session_state.mode == "listening":
     st.info("Escuchando... Por favor, habla ahora.")
     texto_dicho = speech_to_text()
     if texto_dicho is not None:
-        st.session_state.texto_dicho = texto
+        st.session_state.texto_dicho = texto_dicho
         st.session_state.mode = "responding"
     st.experimental_rerun()
 
