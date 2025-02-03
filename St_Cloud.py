@@ -180,8 +180,7 @@ if st.session_state.mode == "listening":
         st.session_state.conversation_history.append(("Usuario", texto_dicho))
         st.session_state.mode = "responding"
         st.experimental_rerun()
-    else:
-        st.experimental_rerun()
+
 
 # Lógica para el modo "responding": generar respuesta y reproducir audio
 if st.session_state.mode == "responding":
@@ -201,13 +200,6 @@ if st.session_state.mode == "responding":
 st.markdown("### Historial de la Conversación")
 for emisor, mensaje in st.session_state.conversation_history:
     st.write(f"**{emisor}:** {mensaje}")
-
-# Botón para limpiar la conversación
-if st.button("Limpiar Conversación"):
-    st.session_state.conversation_history = []
-    st.session_state.mode = "idle"
-    st.experimental_rerun()
-
 
 
 
