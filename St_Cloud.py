@@ -174,7 +174,6 @@ if st.session_state.mode == "listening":
         st.session_state.mode = "responding"
         st.experimental_rerun()
     else:
-        st.session_state.mode = "idle"
         st.experimental_rerun()
 
 # Lógica para el modo "responding": generar respuesta y reproducir audio
@@ -187,11 +186,9 @@ if st.session_state.mode == "responding":
     st.write(f"**Respuesta:** {respuesta_texto}")
     if audio_base64:
         reproducir_audio_autoplay(audio_base64)
-    # Luego, una vez reproducida la respuesta, se vuelve a escuchar.
-    # Ajusta el tiempo de espera según la duración del audio (aquí ponemos 5 segundos por ejemplo)
     time.sleep(3)
     st.session_state.mode = "listening"
-    st.experimental_rerun()
+   # st.experimental_rerun()
 
 
 # Mostrar el historial de conversación
