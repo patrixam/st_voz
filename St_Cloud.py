@@ -106,6 +106,10 @@ def speech_to_text():
         st.error("El componente de audio no está disponible. Asegúrate de que el navegador se haya conectado correctamente.")
         return None
 
+    # Si está en "mute" se ignora la captura
+    if st.session_state.mute:
+        return None
+
     # Esperamos unos segundos para acumular audio
     time.sleep(3)
     try:
@@ -206,7 +210,7 @@ if st.session_state.mode == "responding":
     if audio_base64:
         reproducir_audio_autoplay(audio_base64)
     # Se espera un tiempo suficiente para que se reproduzca el audio
-    time.sleep(5)
+    time.sleep(3)
     # Desactivamos el mute y volvemos al modo de escucha
     st.session_state.mute = False
     st.session_state.mode = "listening"
