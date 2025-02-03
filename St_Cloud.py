@@ -136,7 +136,7 @@ def responder_con_gTTS(texto):
     else:
         resp = "No estoy seguro de cómo responder a eso."
     try:
-        #del tts, audio_bytes, audio_base64
+        del tts, audio_bytes, audio_base64
         tts = gTTS(resp, lang="es")
         audio_bytes = io.BytesIO()
         tts.write_to_fp(audio_bytes)
