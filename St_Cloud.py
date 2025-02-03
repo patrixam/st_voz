@@ -188,7 +188,7 @@ if st.session_state.mode == "responding":
         reproducir_audio_autoplay(audio_base64)
     time.sleep(3)
     st.session_state.mode = "listening"
-   # st.experimental_rerun()
+    st.experimental_rerun()
 
 
 # Mostrar el historial de conversación
@@ -201,6 +201,9 @@ if st.button("Limpiar Conversación"):
     st.session_state.conversation_history = []
     st.session_state.mode = "idle"
     st.experimental_rerun()
+
+if st.button("Reproducir respuesta"):
+    reproducir_audio_autoplay(audio_base64)
 
 
 
