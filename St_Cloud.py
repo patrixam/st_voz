@@ -37,6 +37,8 @@ if "conversation_history" not in st.session_state:
     st.session_state.conversation_history = []  # Lista de tuplas (emisor, mensaje)
 if "mode" not in st.session_state:
     st.session_state.mode = "idle"  # Puede ser "idle", "listening" o "responding"
+if "texto_dicho" not in st.session_state:
+    st.session_state.texto_dicho = ""  # Guardará el texto reconocido
 
 # --- Definición de AudioProcessor ---
 class AudioProcessor(AudioProcessorBase):
