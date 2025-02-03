@@ -10,6 +10,8 @@ import queue
 import speech_recognition as sr
 from gtts import gTTS
 import base64
+import random
+import streamlit.components.v1 as components
 
 # Configuración de ICE (STUN y TURN)
 rtc_configuration = {
@@ -146,18 +148,23 @@ def responder_con_gTTS(texto):
         st.error(f"Error al sintetizar la voz: {e}")
         return resp, None
 
-# --- Función: inyecta HTML para reproducir audio automáticamente ---
-import random
-
+# --- Función: inyecta HTML para reproducir audio automáticamente con un ID único ---
 def reproducir_audio_autoplay(audio_base64):
+    unique_id = random.randint(0, 1000000)
     html_code = f"""
-        <audio autoplay>
+        <audio id="audio_{unique_id}" autoplay>
             <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
             Tu navegador no soporta la reproducción automática.
         </audio>
+        <script>
+            var audioElem = document.getElementById("audio_{unique_id}");
+            if (audioElem) {{
+                audioElem.play();
+            }}
+        </script>
     """
-    st.markdown(html_code, unsafe_allow_html=True)
-    
+    components.html(html_code, height=100)
+
 # --- Modo conversacional ---
 # Si el modo es "idle" mostramos un botón para iniciar la conversación
 if st.session_state.mode == "idle":
@@ -174,7 +181,6 @@ if st.session_state.mode == "listening":
         st.session_state.mode = "responding"
         st.experimental_rerun()
     else:
-        st.session_state.mode = "responding"
         st.experimental_rerun()
 
 # Lógica para el modo "responding": generar respuesta y reproducir audio
@@ -191,7 +197,6 @@ if st.session_state.mode == "responding":
     st.session_state.mode = "listening"
     st.experimental_rerun()
 
-
 # Mostrar el historial de conversación
 st.markdown("### Historial de la Conversación")
 for emisor, mensaje in st.session_state.conversation_history:
@@ -202,9 +207,6 @@ if st.button("Limpiar Conversación"):
     st.session_state.conversation_history = []
     st.session_state.mode = "idle"
     st.experimental_rerun()
-
-if st.button("Reproducir respuesta"):
-    reproducir_audio_autoplay(audio_base64)
 
 
 
