@@ -173,6 +173,8 @@ if st.session_state.mode == "listening":
         st.session_state.conversation_history.append(("Usuario", texto_dicho))
         st.session_state.mode = "responding"
         st.experimental_rerun()
+    else:
+        st.experimental_rerun()
 
 # Lógica para el modo "responding": generar respuesta y reproducir audio
 if st.session_state.mode == "responding":
