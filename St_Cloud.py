@@ -147,14 +147,24 @@ def responder_con_gTTS(texto):
         return resp, None
 
 # --- Función: inyecta HTML para reproducir audio automáticamente ---
+import random
+
 def reproducir_audio_autoplay(audio_base64):
+    unique_id = random.randint(1000, 9999)  # Genera un ID único para evitar caché en la reproducción
     html_code = f"""
-        <audio autoplay>
+        <audio id="audioPlayer{unique_id}" autoplay>
             <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
             Tu navegador no soporta la reproducción automática.
         </audio>
+        <script>
+            var audio = document.getElementById("audioPlayer{unique_id}");
+            if (audio) {{
+                audio.play();
+            }}
+        </script>
     """
     st.markdown(html_code, unsafe_allow_html=True)
+
 
 
 # --- Modo conversacional ---
