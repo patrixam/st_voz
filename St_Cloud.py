@@ -33,8 +33,6 @@ El sistema mantiene el historial de la conversación y, una vez que se responde,
 """)
 
 # Inicializar variables de sesión para el modo y el historial
-if "conversation_history" not in st.session_state:
-    st.session_state.conversation_history = []  # Lista de tuplas (emisor, mensaje)
 if "mode" not in st.session_state:
     st.session_state.mode = "idle"  # Puede ser "idle", "listening" o "responding"
 if "texto_dicho" not in st.session_state:
@@ -189,7 +187,6 @@ if st.session_state.mode == "responding":
     st.info("Generando respuesta...")
     # Usamos el texto guardado en la sesión
     respuesta_texto, audio_base64 = responder_con_gTTS(st.session_state.texto_dicho)
-    st.session_state.conversation_history.append(("Sistema", respuesta_texto))
     st.write(f"**Usuario:** {st.session_state.texto_dicho}")
     st.write(f"**Respuesta:** {respuesta_texto}")
     if audio_base64:
