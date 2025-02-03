@@ -191,7 +191,7 @@ if st.session_state.mode == "responding":
     st.write(f"**Respuesta:** {respuesta_texto}")
     if audio_base64:
         reproducir_audio_autoplay(audio_base64)
-    time.sleep(3)
+    time.sleep(5)
     st.session_state.mode = "listening"
     st.experimental_rerun()
 
