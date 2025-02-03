@@ -182,13 +182,13 @@ if st.session_state.mode == "responding":
     respuesta_texto, audio_base64 = responder_con_gTTS(texto_ultimo)
     st.session_state.conversation_history.append(("Sistema", respuesta_texto))
     st.write(f"**Respuesta:** {respuesta_texto}")
-    reproducir_audio_autoplay(audio_base64)
-    del audio_base64
+    if audio_base64:
+        reproducir_audio_autoplay(audio_base64)
     # Luego, una vez reproducida la respuesta, se vuelve a escuchar.
     # Ajusta el tiempo de espera según la duración del audio (aquí ponemos 5 segundos por ejemplo)
     time.sleep(3)
-    st.experimental_rerun()
     st.session_state.mode = "listening"
+    st.experimental_rerun()
 
 
 # Mostrar el historial de conversación
