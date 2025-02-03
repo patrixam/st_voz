@@ -101,8 +101,9 @@ def frames_to_wav(frames):
 
 # --- Función: convertir audio capturado a texto ---
 def speech_to_text():
-    # Si está en "mute" se ignora la captura
-    if st.session_state.mute:
+    # Verificar si webrtc_ctx y su audio_receiver están disponibles
+    if webrtc_ctx is None or webrtc_ctx.audio_receiver is None:
+        st.error("El componente de audio no está disponible. Asegúrate de que el navegador se haya conectado correctamente.")
         return None
 
     # Esperamos unos segundos para acumular audio
@@ -134,6 +135,7 @@ def speech_to_text():
     except sr.RequestError as e:
         st.error(f"Error en el servicio de reconocimiento: {e}")
         return None
+
 
 # --- Función: sintetiza respuesta con gTTS y retorna texto y audio en base64 ---
 def responder_con_gTTS(texto):
