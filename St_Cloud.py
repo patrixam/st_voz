@@ -179,7 +179,7 @@ if st.session_state.mode == "listening":
     if texto_dicho is not None:
         st.session_state.conversation_history.append(("Usuario", texto_dicho))
         st.session_state.mode = "responding"
-        st.experimental_rerun()
+    st.experimental_rerun()
 
 
 # Lógica para el modo "responding": generar respuesta y reproducir audio
@@ -189,17 +189,13 @@ if st.session_state.mode == "responding":
     texto_ultimo = st.session_state.conversation_history[-1][1]
     respuesta_texto, audio_base64 = responder_con_gTTS(texto_ultimo)
     st.session_state.conversation_history.append(("Sistema", respuesta_texto))
+    st.write(f"**Usuario:** {texto_ultimo}")
     st.write(f"**Respuesta:** {respuesta_texto}")
     if audio_base64:
         reproducir_audio_autoplay(audio_base64)
     time.sleep(3)
     st.session_state.mode = "listening"
     st.experimental_rerun()
-
-# Mostrar el historial de conversación
-st.markdown("### Historial de la Conversación")
-for emisor, mensaje in st.session_state.conversation_history:
-    st.write(f"**{emisor}:** {mensaje}")
 
 
 
