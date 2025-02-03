@@ -136,6 +136,7 @@ def responder_con_gTTS(texto):
     else:
         resp = "No estoy seguro de cómo responder a eso."
     try:
+        del tts, audio_bytes, audio_base64
         tts = gTTS(resp, lang="es")
         audio_bytes = io.BytesIO()
         tts.write_to_fp(audio_bytes)
@@ -150,33 +151,20 @@ def responder_con_gTTS(texto):
 import random
 
 def reproducir_audio_autoplay(audio_base64):
-    unique_id = random.randint(1000, 9999)  # Genera un ID único para evitar caché en la reproducción
     html_code = f"""
-        <audio id="audioPlayer{unique_id}" autoplay>
+        <audio autoplay>
             <source src="data:audio/mp3;base64,{audio_base64}" type="audio/mp3">
             Tu navegador no soporta la reproducción automática.
         </audio>
-        <script>
-            var audio = document.getElementById("audioPlayer{unique_id}");
-            if (audio) {{
-                audio.play();
-            }}
-        </script>
     """
     st.markdown(html_code, unsafe_allow_html=True)
-
-
-
+    
 # --- Modo conversacional ---
 # Si el modo es "idle" mostramos un botón para iniciar la conversación
 if st.session_state.mode == "idle":
     if st.button("Iniciar Conversación"):
         st.session_state.mode = "listening"
         st.experimental_rerun()
-
-# Si estamos en modo "listening" o "responding", activa autorefresh (cada 1 segundo)
-#if st.session_state.mode in ["listening", "responding"]:
-#    st_autorefresh(interval=1000, limit=0, key="conversation_refresh")
 
 # Lógica para el modo "listening": grabar y convertir a texto
 if st.session_state.mode == "listening":
@@ -201,8 +189,6 @@ if st.session_state.mode == "responding":
     time.sleep(3)
     st.session_state.mode = "listening"
     st.experimental_rerun()
-    # Forzar actualización
-    st_autorefresh(interval=500, limit=1, key="force_update")
 
 # Mostrar el historial de conversación
 st.markdown("### Historial de la Conversación")
