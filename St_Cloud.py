@@ -187,8 +187,9 @@ if st.session_state.mode == "responding":
     # Luego, una vez reproducida la respuesta, se vuelve a escuchar.
     # Ajusta el tiempo de espera según la duración del audio (aquí ponemos 5 segundos por ejemplo)
     time.sleep(3)
-    st.session_state.mode = "idle"
     st.experimental_rerun()
+    st.session_state.mode = "listening"
+
 
 # Mostrar el historial de conversación
 st.markdown("### Historial de la Conversación")
